@@ -473,3 +473,6 @@ Total output lines: 463
   box-shadow:0 12px 25px rgba(0,0,0,.18),inset 0 0 18px color-mix(in srgb,var(--glow) 10%,transparent);
   backdrop-filter:blur(3px);
 }
+
+/* UI override */
+.v2-public-tables>article:first-child .v2-table-game-icon{background-color:transparent!important;background-image:linear-gradient(rgba(103,174,255,.22) 1px,transparent 1px),linear-gradient(90deg,rgba(103,174,255,.22) 1px,transparent 1px)!important;background-size:9px 9px!important}.v2-last-trick-strip .v2-card-back{width:46px!important;height:68px!important;background-size:contain!important}@media(max-width:700px){.v2-last-trick-strip .v2-card-back{width:40px!important;height:59px!important}}
