@@ -11,5 +11,10 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="ka"><body>{children}</body></html>;
+  return <html lang="ka"><head>
+    <link rel="preload" as="image" href="/card-sprites/blue.webp" fetchPriority="high" />
+    <link rel="preload" as="image" href="/card-sprites/green.webp" fetchPriority="high" />
+    <link rel="preload" as="image" href="/cards/joker-modern.webp" fetchPriority="high" />
+    <link rel="preload" as="image" href="/card-backs/red-full-v2.webp" fetchPriority="high" />
+  </head><body>{children}</body></html>;
 }
