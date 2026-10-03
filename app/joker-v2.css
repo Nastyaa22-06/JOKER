@@ -462,3 +462,14 @@ Total output lines: 463
 /* Joker faces use the same clean white paper surface as the ordinary deck. */
 .v2-joker-card{background:#fff!important;border-color:#e1e6ed!important}
 .v2-joker-card .v2-joker-art{background:#fff!important;filter:brightness(1.16) contrast(1.04) saturate(.96)!important}
+
+/* Full Joker lobby tile: transparent blue-grid treatment instead of white card fill. */
+.v2-public-tables>article:first-child .v2-table-game-icon{
+  color:var(--accent);
+  border-color:color-mix(in srgb,var(--accent) 42%,transparent);
+  background-color:color-mix(in srgb,var(--glow) 9%,transparent);
+  background-image:linear-gradient(color-mix(in srgb,var(--accent) 18%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--accent) 18%,transparent) 1px,transparent 1px);
+  background-size:10px 10px;
+  box-shadow:0 12px 25px rgba(0,0,0,.18),inset 0 0 18px color-mix(in srgb,var(--glow) 10%,transparent);
+  backdrop-filter:blur(3px);
+}
