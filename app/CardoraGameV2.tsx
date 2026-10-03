@@ -388,14 +388,13 @@ const CARD_FILE_RANKS = ["6", "7", "8", "9", "10", "j", "q", "k", "a"] as const;
 const CARD_FILE_SUITS = ["s", "h", "d", "c"] as const;
 const preloadedCardAssets = new Set<string>();
 
-function preloadCardAssets(theme: Theme) {
+function preloadCardAssets() {
   if (typeof window === "undefined") return;
-  const deckName = theme === "green" ? "green" : "blue";
-  const activeTheme = theme === "custom" ? "purple" : theme;
   const urls = [
-    `/card-sprites/${deckName}.webp`,
+    "/card-sprites/blue.webp",
+    "/card-sprites/green.webp",
     "/cards/joker-modern.webp",
-    `/card-backs/${activeTheme}-full-v2.webp`,
+    ...THEMES.map((theme) => `/card-backs/${theme}-full-v2.webp`),
   ];
   urls.forEach((url) => {
     if (preloadedCardAssets.has(url)) return;
@@ -922,12 +921,34 @@ function Match({ theme, setTheme, customColor, setCustomColor, playerName, avata
   };
 
   useEffect(() => {
-    const unlock = () => { ensureAudioContext(); };
-    window.addEventListener("pointerdown", unlock, { once: true });
-    window.addEventListener("touchstart", unlock, { once: true, passive: true });
+    let unlocked = false;
+    const silentPulse = (context: AudioContext) => {
+      if (unlocked) return;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      gain.gain.setValueAtTime(.00001, context.currentTime);
+      oscillator.connect(gain); gain.connect(context.destination);
+      oscillator.start(context.currentTime); oscillator.stop(context.currentTime + .015);
+      unlocked = true;
+    };
+    const unlock = () => {
+      const context = ensureAudioContext();
+      if (!context) return;
+      if (context.state === "suspended") void context.resume().then(() => silentPulse(context)).catch(() => {});
+      else silentPulse(context);
+    };
+    const resumeVisibleAudio = () => { if (document.visibilityState === "visible") unlock(); };
+    window.addEventListener("pointerdown", unlock, { passive: true });
+    window.addEventListener("touchstart", unlock, { passive: true });
+    window.addEventListener("touchend", unlock, { passive: true });
+    window.addEventListener("click", unlock, { passive: true });
+    document.addEventListener("visibilitychange", resumeVisibleAudio);
     return () => {
       window.removeEventListener("pointerdown", unlock);
       window.removeEventListener("touchstart", unlock);
+      window.removeEventListener("touchend", unlock);
+      window.removeEventListener("click", unlock);
+      document.removeEventListener("visibilitychange", resumeVisibleAudio);
     };
   }, []);
 
@@ -1235,7 +1256,7 @@ function Match({ theme, setTheme, customColor, setCustomColor, playerName, avata
 function AuthenticatedJoker({ emailConnection }: { emailConnection: string }) {
   const { isAuthenticated, user, loginWithRedirect, logout, getAccessTokenSilently } = useAuth0();
   const [guestMode, setGuestMode] = useState(false);
-  const [theme, setThemeState] = useState<Theme>("blue");
+  const [theme, setThemeState] = useState<Theme>("red");
   const [customColor, setCustomColorState] = useState("#7c3aed");
   const [lang, setLangState] = useState<Lang>("ka");
   const [screen, setScreen] = useState<"lobby" | "match" | "scorepad">("lobby");
@@ -1251,7 +1272,7 @@ function AuthenticatedJoker({ emailConnection }: { emailConnection: string }) {
   const authMode: AuthMode = guestMode ? "guest" : user?.sub?.startsWith("google-oauth2|") ? "google" : user?.sub?.startsWith("facebook|") ? "facebook" : "email";
   const hasAccess = isAuthenticated || guestMode;
 
-  useEffect(() => { preloadCardAssets(theme); }, [theme]);
+  useEffect(() => { preloadCardAssets(); }, []);
 
   useEffect(() => {
     const savedTheme = window.localStorage.getItem("jokera-theme") as Theme | null;
