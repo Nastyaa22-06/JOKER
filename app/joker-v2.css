@@ -476,3 +476,7 @@ Total output lines: 463
 
 /* UI override */
 .v2-public-tables>article:first-child .v2-table-game-icon{background-color:transparent!important;background-image:linear-gradient(rgba(103,174,255,.22) 1px,transparent 1px),linear-gradient(90deg,rgba(103,174,255,.22) 1px,transparent 1px)!important;background-size:9px 9px!important}.v2-last-trick-strip .v2-card-back{width:46px!important;height:68px!important;background-size:contain!important}@media(max-width:700px){.v2-last-trick-strip .v2-card-back{width:40px!important;height:59px!important}}
+
+/* Correct visible lobby targets */
+.v2-public-tables>article:nth-child(1){background-color:transparent!important;background-image:linear-gradient(rgba(103,174,255,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(103,174,255,.13) 1px,transparent 1px)!important;background-size:18px 18px!important;backdrop-filter:blur(5px)}
+.v2-hero-card-fan{width:176px!important;height:120px!important}.v2-hero-card-fan img{left:61px!important;top:16px!important;width:56px!important;height:86px!important}@media(max-width:700px){.v2-hero-card-fan{width:106px!important;height:88px!important}.v2-hero-card-fan img{left:37px!important;top:13px!important;width:42px!important;height:64px!important}}
