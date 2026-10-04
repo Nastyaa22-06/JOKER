@@ -920,22 +920,33 @@ function Match({ theme, setTheme, customColor, setCustomColor, playerName, avata
     return context;
   };
 
-  useEffect(() => {
-    let unlocked = false;
-    const silentPulse = (context: AudioContext) => {
-      if (unlocked) return;
+  const primeAudioContext = (audible = false) => {
+    const context = ensureAudioContext();
+    if (!context) return null;
+    try {
+      // iOS must see a source created and started inside the original touch event.
       const oscillator = context.createOscillator();
       const gain = context.createGain();
-      gain.gain.setValueAtTime(.00001, context.currentTime);
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(audible ? 660 : 220, context.currentTime);
+      gain.gain.setValueAtTime(audible ? .0001 : .000001, context.currentTime);
+      if (audible) {
+        gain.gain.exponentialRampToValueAtTime(.045, context.currentTime + .008);
+        gain.gain.exponentialRampToValueAtTime(.0001, context.currentTime + .09);
+      }
       oscillator.connect(gain); gain.connect(context.destination);
-      oscillator.start(context.currentTime); oscillator.stop(context.currentTime + .015);
-      unlocked = true;
-    };
+      oscillator.start(context.currentTime); oscillator.stop(context.currentTime + (audible ? .1 : .02));
+      if (context.state === "suspended") void context.resume().catch(() => {});
+    } catch { /* Audio remains optional when the browser blocks it. */ }
+    return context;
+  };
+
+  useEffect(() => {
+    let unlocked = false;
     const unlock = () => {
-      const context = ensureAudioContext();
-      if (!context) return;
-      if (context.state === "suspended") void context.resume().then(() => silentPulse(context)).catch(() => {});
-      else silentPulse(context);
+      if (unlocked) return;
+      const context = primeAudioContext();
+      if (context) unlocked = true;
     };
     const resumeVisibleAudio = () => { if (document.visibilityState === "visible") unlock(); };
     window.addEventListener("pointerdown", unlock, { passive: true });
@@ -1211,7 +1222,7 @@ function Match({ theme, setTheme, customColor, setCustomColor, playerName, avata
   }, [phase, placement, awardCoins]);
 
   return <main className={`v2-match theme-${theme}`} style={theme === "custom" ? customThemeStyle(customColor) : undefined}>
-    <header className="v2-match-top"><button className="v2-back" onClick={() => exit(phase !== "game-over", gameId.current)}><ArrowLeft /> {copy.lobby}</button><div className="v2-match-brand"><Logo compact />{room && <span className="v2-match-room">{room.visibility === "private" ? <Lock /> : <Globe2 />}<b>{room.code}</b></span>}</div><div className="v2-match-tools"><span className="v2-coin-pill compact"><Coins />{coins.toLocaleString()}</span><LanguageToggle lang={lang} setLang={setLang} /><button className={`v2-sound ${soundOn ? "is-on" : "is-off"}`} onClick={() => { const next = !soundOn; setSoundOn(next); if (next) ensureAudioContext(); }} aria-label={copy.sound} aria-pressed={soundOn} title={copy.sound}>{soundOn ? <Volume2 /> : <VolumeX />}</button><button onClick={() => setShowRules(true)}><BookOpen /> {copy.rules}</button><ThemePicker compact theme={theme} setTheme={setTheme} customColor={customColor} setCustomColor={setCustomColor} lang={lang} /></div></header>
+    <header className="v2-match-top"><button className="v2-back" onClick={() => exit(phase !== "game-over", gameId.current)}><ArrowLeft /> {copy.lobby}</button><div className="v2-match-brand"><Logo compact />{room && <span className="v2-match-room">{room.visibility === "private" ? <Lock /> : <Globe2 />}<b>{room.code}</b></span>}</div><div className="v2-match-tools"><span className="v2-coin-pill compact"><Coins />{coins.toLocaleString()}</span><LanguageToggle lang={lang} setLang={setLang} /><button className={`v2-sound ${soundOn ? "is-on" : "is-off"}`} onPointerDown={() => primeAudioContext()} onClick={() => { const next = !soundOn; setSoundOn(next); if (next) primeAudioContext(true); }} aria-label={copy.sound} aria-pressed={soundOn} title={copy.sound}>{soundOn ? <Volume2 /> : <VolumeX />}</button><button onClick={() => setShowRules(true)}><BookOpen /> {copy.rules}</button><ThemePicker compact theme={theme} setTheme={setTheme} customColor={customColor} setCustomColor={setCustomColor} lang={lang} /></div></header>
     <a href={AD_EMAIL_HREF} className="v2-ad-rail" aria-label={copy.advertise}><span>AD</span><b>{copy.advertise}</b><Plus /></a>
     <section className={`v2-table ${chatExpanded ? "chat-open" : ""}`}>
       <div className="v2-table-arena" aria-hidden="true"><span className="v2-table-rim" /><span className="v2-table-monogram">JOKER</span><i className="seat-mark seat-north" /><i className="seat-mark seat-east" /><i className="seat-mark seat-south" /><i className="seat-mark seat-west" /></div>
